@@ -90,16 +90,27 @@ async function startup() {
 	startCLI();
 }
 
-async function spawn(variable: Cp.ChildProcess | undefined, command: string, write: (output: string) => void): Promise<void> {
+async function spawn(pointer: Cp.ChildProcess | undefined, command: string, write: (output: string) => void): Promise<void> {
 	return new Promise(res => {
 		try {
 			let cwd: string = process.cwd();
-			variable = Cp.spawn(command, [], { shell: true, cwd: cwd, detached: false});
+			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd, detached: false});
 
-			variable.stdout?.on("data", data => {
-				write(data);
+			pointer.stdout?.on("data", data => {
+				data = data.toString();
+
+				//capture @-flags
+				switch (data[0]) {
+					case "@": {
+						parseFlaggedOutput(data, pointer);
+						break;
+					}
+					default: {
+						write(data);
+					}
+				}
 			});
-			variable.on("exit", () => {
+			pointer.on("exit", () => {
 				res();
 			});
 		} catch {
@@ -108,14 +119,30 @@ async function spawn(variable: Cp.ChildProcess | undefined, command: string, wri
 	});
 }
 
+function parseFlaggedOutput(command: string, old_process: Cp.ChildProcess) {
+	let words = command.split(" ");
+	let flag = words.splice(0, 1)[0];
+	let message = words.join(" ");
+
+	switch (flag) {
+		case "@exec": {
+			//spawn new process and forward stdout
+			let new_process: Cp.ChildProcess | undefined;
+			spawn(new_process, message, output => {
+				old_process.stdin?.write(output);
+			});
+		}
+	}
+} 
+
 async function startCLI() {
 	let CLI = Readline.createInterface(process.stdin, process.stdout);
 	let current_process: Cp.ChildProcess | undefined;
 
 	while (true) {
 		let command = await CLI.question("> ");
-		await spawn(current_process, command, data => {
-			process.stdout.write(data.toString());
+		await spawn(current_process, command, output => {
+			process.stdout.write(output);
 		});
 		current_process = undefined;
 	}
