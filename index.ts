@@ -50,4 +50,45 @@ while (i < folders_to_create.length) {
 
 	i++;
 }
-console.log("\n");
+console.log("");
+
+//CONFIGURATION
+let configuration_path = "Modules/Base/config.json";
+let configuration: { [field: string]: any } = {};
+let configuration_default: typeof configuration = {
+	name: {
+		en: "Untitled Station",
+	},
+	greeting: {
+		en: "Welcome!",
+	},
+	number: 1,
+
+	commands: {},
+	groups: {},
+	entry_permits: [],
+};
+
+//get configuration
+try {
+	let configuration_text = await Fs.readFile(configuration_path, {encoding: "utf8"});
+
+	try {
+		configuration = JSON.parse(configuration_text);
+
+		//make sure number does not contain a zero
+		if (configuration.number.toString().split("").includes("0")) {;
+			console.error("ERR:\tStation number cannot contain a zero.");
+			process.exit()
+		}
+	} catch {
+		console.log("ERR:\tFailed to parse configuration file.");
+		process.exit();
+	}
+} catch {
+	await Fs.writeFile(configuration_path, JSON.stringify(configuration_default, null, 4));
+	console.log("Created configuration file at '%s'. \nWARN\tPlease edit the configuration file before using this station.", configuration_path);
+	process.exit();
+}
+
+console.log(configuration.greeting.en);
