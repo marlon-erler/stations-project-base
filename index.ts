@@ -90,16 +90,16 @@ async function startup() {
 	startCLI();
 }
 
-async function spawn(command: string, write: (output: string) => void): Promise<void> {
+async function spawn(variable: Cp.ChildProcess | undefined, command: string, write: (output: string) => void): Promise<void> {
 	return new Promise(res => {
 		try {
 			let cwd: string = process.cwd();
-			let cp = Cp.spawn(command, [], { shell: true, cwd: cwd});
+			variable = Cp.spawn(command, [], { shell: true, cwd: cwd, detached: false});
 
-			cp.stdout.on("data", data => {
+			variable.stdout?.on("data", data => {
 				write(data);
 			});
-			cp.on("exit", () => {
+			variable.on("exit", () => {
 				res();
 			});
 		} catch {
@@ -110,12 +110,14 @@ async function spawn(command: string, write: (output: string) => void): Promise<
 
 async function startCLI() {
 	let CLI = Readline.createInterface(process.stdin, process.stdout);
+	let current_process: Cp.ChildProcess | undefined;
 
 	while (true) {
 		let command = await CLI.question("> ");
-		await spawn(command, data => {
+		await spawn(current_process, command, data => {
 			process.stdout.write(data.toString());
 		});
+		current_process = undefined;
 	}
 }
 
