@@ -4,7 +4,7 @@
   "description": "Station Base",
   "main": "index.js",
   "bin": {
-	  "boot": "index.js"
+    "boot": "index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/marlon-erler/Stations/issues"
   },
-  "homepage": "https://github.com/marlon-erler/Stations#readme"
+  "homepage": "https://github.com/marlon-erler/Stations#readme",
+  "dependencies": {
+    "@types/node": "^18.11.9"
+  }
 }
