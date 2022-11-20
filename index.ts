@@ -4,16 +4,7 @@
 import Cp from "child_process";
 import Fs from "fs/promises";
 import Path from "path";
-
-//UTILITY
-async function ask(question: string): Promise<string> {
-	return new Promise(res => {
-		process.stdout.write(question);
-		process.stdin.once("data", data => {
-			res(data.toString());
-		});
-	});
-}
+import Readline from "readline/promises";
 
 //MAIN
 async function startup() {
@@ -99,30 +90,33 @@ async function startup() {
 	startCLI();
 }
 
-function spawn(command: string, write: (output: string) => void) {
-	let cwd: string = process.cwd();
-	let cp = Cp.spawn(command, [], { shell: true, cwd: cwd});
+async function spawn(command: string, write: (output: string) => void): Promise<void> {
+	return new Promise(res => {
+		try {
+			let cwd: string = process.cwd();
+			let cp = Cp.spawn(command, [], { shell: true, cwd: cwd});
 
-	cp.stdout.on("data", data => {
-		write(data);
-	});
-	cp.on("exit", () => {
-		write("EXITED");
+			cp.stdout.on("data", data => {
+				write(data);
+			});
+			cp.on("exit", () => {
+				res();
+			});
+		} catch {
+			res();
+		}
 	});
 }
 
 async function startCLI() {
-	let command = await ask("> ");
-	spawn(command, data => {
-		switch (data) {
-			case "EXITED": {
-				return startCLI();
-			}
-			default: {
-				console.log(data.toString());
-			}
-		}
-	});
+	let CLI = Readline.createInterface(process.stdin, process.stdout);
+
+	while (true) {
+		let command = await CLI.question("> ");
+		await spawn(command, data => {
+			process.stdout.write(data.toString());
+		});
+	}
 }
 
 //STARTUP
