@@ -65,6 +65,7 @@ async function startup() {
 
 		commands: {},
 		groups: {},
+		permissions: {},
 		entry_permits: [],
 	};
 
