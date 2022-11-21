@@ -111,8 +111,9 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 			let cwd = process.cwd();
 			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd});
 			pointer.stdout?.setEncoding("utf8");
+			pointer.stderr?.setEncoding("utf8");
 
-			pointer.stdout!.on("data", data => {
+			pointer.stdout?.on("data", data => {
 				//capture @-flags
 				switch (data[0]) {
 					case "@": {
@@ -123,6 +124,9 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 						write(data);
 					}
 				}
+			});
+			pointer.stderr?.on("data", data => {
+				write(data);
 			});
 			pointer.on("exit", () => {
 				return res();
