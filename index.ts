@@ -6,6 +6,9 @@ import Fs from "fs/promises";
 import Path from "path";
 import Readline from "readline/promises";
 
+//DATA
+let configuration: { [field: string]: any }
+
 //MAIN
 async function startup() {
 	//FILE SYSTEM
@@ -48,7 +51,7 @@ async function startup() {
 
 	//CONFIGURATION
 	let configuration_path = "Modules/Base/config.json";
-	let configuration: { [field: string]: any } = {};
+	configuration = {};
 	let configuration_default: typeof configuration = {
 		name: {
 			en: "Untitled Station",
@@ -93,16 +96,27 @@ async function startup() {
 async function spawn(pointer: Cp.ChildProcess | undefined, command: string, write: (output: string) => void): Promise<void> {
 	return new Promise(res => {
 		try {
-			let cwd: string = process.cwd();
-			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd, detached: false});
+			let words = command.split(" ");
+			let command_name = words.splice(0, 1)[0];
+			let shell_command_name = configuration.commands[command_name];
+			let command_content = words.join(" ");
 
-			pointer.stdout?.on("data", data => {
-				data = data.toString();
+			if (shell_command_name == null) {
+				write("e1\n");
+				return res();
+			} 
 
+			command = shell_command_name + " " + command_content;
+
+			let cwd = process.cwd();
+			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd});
+			pointer.stdout?.setEncoding("utf8");
+
+			pointer.stdout!.on("data", data => {
 				//capture @-flags
 				switch (data[0]) {
 					case "@": {
-						parseFlaggedOutput(data, pointer);
+						parseFlaggedOutput(data, pointer!);
 						break;
 					}
 					default: {
@@ -111,10 +125,11 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 				}
 			});
 			pointer.on("exit", () => {
-				res();
+				return res();
 			});
 		} catch {
-			res();
+			write("e2\n");
+			return res();
 		}
 	});
 }
