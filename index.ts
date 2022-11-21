@@ -29,6 +29,7 @@ async function startup() {
 		console.log("Checking folder %i of %i...", i + 1, folders_to_create.length);
 		let path = Path.join("Modules", folders_to_create[i]);
 
+		//create folder
 		try {
 			await Fs.mkdir(path);
 			console.log("OK:\tCreated folder '%s'.", path);
@@ -37,6 +38,7 @@ async function startup() {
 			console.log("WARN:\tDid not create '%s'.", path);
 		}
 
+		//validate folder
 		try {
 			await Fs.stat(path);
 			console.log("OK:\t'%s' exists.", path);
@@ -83,6 +85,7 @@ async function startup() {
 			process.exit();
 		}
 	} catch {
+		//create new configuration file
 		await Fs.writeFile(configuration_path, JSON.stringify(configuration_default, null, 4));
 		console.log("Created configuration file at '%s'. \nWARN\tPlease edit the configuration file before using this station.", configuration_path);
 		process.exit();
@@ -101,15 +104,15 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 			let shell_command_name = configuration.commands[command_name];
 			let command_content = words.join(" ");
 
+			//validate command
 			if (shell_command_name == null) {
 				write("e1\n");
 				return res();
 			} 
-
 			command = shell_command_name + " " + command_content;
 
 			let cwd = "Modules"; 
-			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd});
+			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd });
 			pointer.stdout?.setEncoding("utf8");
 			pointer.stderr?.setEncoding("utf8");
 
@@ -153,7 +156,7 @@ function parseFlaggedOutput(command: string, cp: Cp.ChildProcess) {
 			break;
 		}
 		case "@info": {
-			cp.stdin?.write(configuration[message].toString());
+			cp.stdin?.write(JSON.stringify(configuration[message]));
 			break;
 		}
 	}
