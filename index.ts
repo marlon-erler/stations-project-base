@@ -108,7 +108,7 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 
 			command = shell_command_name + " " + command_content;
 
-			let cwd = process.cwd();
+			let cwd = "Modules"; 
 			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd});
 			pointer.stdout?.setEncoding("utf8");
 			pointer.stderr?.setEncoding("utf8");
