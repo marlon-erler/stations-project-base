@@ -138,7 +138,7 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 	});
 }
 
-function parseFlaggedOutput(command: string, old_process: Cp.ChildProcess) {
+function parseFlaggedOutput(command: string, cp: Cp.ChildProcess) {
 	let words = command.split(" ");
 	let flag = words.splice(0, 1)[0];
 	let message = words.join(" ");
@@ -148,8 +148,13 @@ function parseFlaggedOutput(command: string, old_process: Cp.ChildProcess) {
 			//spawn new process and forward stdout
 			let new_process: Cp.ChildProcess | undefined;
 			spawn(new_process, message, output => {
-				old_process.stdin?.write(output);
+				cp.stdin?.write(output);
 			});
+			break;
+		}
+		case "@info": {
+			cp.stdin?.write(configuration[message]);
+			break;
 		}
 	}
 } 
