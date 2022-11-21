@@ -153,7 +153,7 @@ function parseFlaggedOutput(command: string, cp: Cp.ChildProcess) {
 			break;
 		}
 		case "@info": {
-			cp.stdin?.write(configuration[message]);
+			cp.stdin?.write(configuration[message].toString());
 			break;
 		}
 	}
