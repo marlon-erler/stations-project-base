@@ -1,9 +1,9 @@
 {
   "name": "@stations-project/base",
-  "version": "0.0.0",
+  "version": "1.0.0-alpha.1",
   "description": "Station Base",
   "type": "module",
-  "main": "./index.js",
+  "main": "index.js",
   "bin": {
     "boot": "./index.js"
   },
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marlon-erler/Stations.git"
+    "url": "git+https://github.com/marlon-erler/stations-project-base.git"
   },
   "author": "a035",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/marlon-erler/Stations/issues"
+    "url": "https://github.com/marlon-erler/stations-project-base/issues"
   },
-  "homepage": "https://github.com/marlon-erler/Stations#readme",
+  "homepage": "https://github.com/marlon-erler/stations-project-base#readme",
   "dependencies": {
     "@types/node": "^18.11.9"
   }
