@@ -74,7 +74,7 @@ async function startup() {
 			configuration = JSON.parse(configuration_text);
 
 			//make sure number does not contain a zero
-			if (configuration.number.toString().split("").includes("0")) {;
+			if (configuration.number.toString().includes("0")) {;
 				console.error("ERR:\tStation number cannot contain a zero.");
 				process.exit()
 			}
