@@ -1,6 +1,6 @@
 {
   "name": "@stations-project/base",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "Station Base",
   "type": "module",
   "main": "index.js",

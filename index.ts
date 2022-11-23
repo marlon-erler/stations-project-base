@@ -97,7 +97,7 @@ async function startup() {
 	startCLI();
 }
 
-async function spawn(pointer: Cp.ChildProcess | undefined, command: string, write: (output: string) => void): Promise<void> {
+async function spawn(pointer: Cp.ChildProcess | undefined, number: string, command: string, write: (output: string) => void): Promise<void> {
 	return new Promise(res => {
 		try {
 			let words = command.split(" ");
@@ -110,7 +110,7 @@ async function spawn(pointer: Cp.ChildProcess | undefined, command: string, writ
 				write("e1\n");
 				return res();
 			} 
-			command = shell_command_name + " " + command_content;
+			command = `${shell_command_name} ${number} ${command_content}`; 
 
 			let cwd = "Modules"; 
 			pointer = Cp.spawn(command, [], { shell: true, cwd: cwd });
@@ -149,15 +149,19 @@ function parseFlaggedOutput(command: string, cp: Cp.ChildProcess) {
 
 	switch (flag) {
 		case "@exec": {
+			//get number
+			let number = words.splice(0, 1) [0];
+			message = words.join();
+
 			//spawn new process and forward stdout
 			let new_process: Cp.ChildProcess | undefined;
-			spawn(new_process, message, output => {
+			spawn(new_process, number, message, output => {
 				cp.stdin?.write(output);
 			});
 			break;
 		}
 		case "@info": {
-			cp.stdin?.write(JSON.stringify(configuration[message]));
+			cp.stdin?.write(JSON.stringify(configuration[message] ?? null));
 			break;
 		}
 	}
@@ -169,7 +173,7 @@ async function startCLI() {
 
 	while (true) {
 		let command = await CLI.question("> ");
-		await spawn(current_process, command, output => {
+		await spawn(current_process, "0", command, output => {
 			process.stdout.write(output);
 		});
 		current_process = undefined;
