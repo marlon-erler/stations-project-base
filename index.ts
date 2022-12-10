@@ -65,7 +65,6 @@ async function startup() {
 
 		commands: {},
 		groups: {},
-		permissions: {},
 		entry_permits: [],
 	};
 
@@ -97,12 +96,12 @@ async function startup() {
 	startCLI();
 }
 
-async function spawn(pointer: Cp.ChildProcess | undefined, number: string, command: string, write: (output: string) => void): Promise<void> {
+async function spawn(pointer: Cp.ChildProcess | undefined, number: string, alvl: number, command: string, write: (output: string) => void): Promise<void> {
 	return new Promise(res => {
 		try {
 			let words = command.split(" ");
 			let command_name = words.splice(0, 1)[0];
-			let shell_command_name = configuration.commands[command_name];
+			let shell_command_name = configuration.commands[command_name].execute;
 			let command_content = words.join(" ");
 
 			//validate command
@@ -110,6 +109,18 @@ async function spawn(pointer: Cp.ChildProcess | undefined, number: string, comma
 				write("e1\n");
 				return res();
 			} 
+
+			//authenticate command
+			let permissions = configuration.commands[command_name].permissions;
+			if (permissions[0] > alvl) {
+				write("e6");
+				return res();
+			}
+			if (permissions.indexOf(number) < 1 && number != "0") {
+				write("e5");
+				return res();
+			}
+
 			command = `${shell_command_name} ${number} ${command_content}`; 
 
 			let cwd = "Modules"; 
@@ -150,12 +161,13 @@ function parseFlaggedOutput(command: string, cp: Cp.ChildProcess) {
 	switch (flag) {
 		case "@exec": {
 			//get number
-			let number = words.splice(0, 1) [0];
+			let number = words.splice(0, 1)[0];
+			let alvl = parseInt(words.splice(0, 1)[0]);
 			message = words.join();
 
 			//spawn new process and forward stdout
 			let new_process: Cp.ChildProcess | undefined;
-			spawn(new_process, number, message, output => {
+			spawn(new_process, number, alvl, message, output => {
 				cp.stdin?.write(output);
 			});
 			break;
@@ -173,7 +185,7 @@ async function startCLI() {
 
 	while (true) {
 		let command = await CLI.question("> ");
-		await spawn(current_process, "0", command, output => {
+		await spawn(current_process, "0", 2, command, output => {
 			process.stdout.write(output);
 		});
 		current_process = undefined;
